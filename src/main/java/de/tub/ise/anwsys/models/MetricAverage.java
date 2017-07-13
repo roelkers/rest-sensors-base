@@ -2,27 +2,26 @@ package de.tub.ise.anwsys.models;
 
 public class MetricAverage {
 
-	private String metricId;
+	private String metricName;
+	
 	private double value;
 	private int sampleSize;
 	
-	public MetricAverage(String metricId, double value, int sampleSize) {
+	public MetricAverage(String metricName, double value, int sampleSize) {
 		super();
-		this.metricId = metricId;
+		this.metricName = metricName;
 		this.value = value;
 		this.sampleSize = sampleSize;
 	}
 
-	public String getMetricId() {
-		return metricId;
+	public String getMetricName() {
+		return metricName;
 	}
 
 	public void setMetricId(String metricId) {
-		this.metricId = metricId;
+		this.metricName = metricId;
 	}
-
 	
-
 	public double getValue() {
 		return value;
 	}

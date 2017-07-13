@@ -5,11 +5,14 @@ import java.sql.Date;
 
 import javax.annotation.Generated;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 public class Measurement implements Serializable{
@@ -23,8 +26,8 @@ public class Measurement implements Serializable{
 	@Id
 	String id;
 	
-	@ManyToOne
-	@JsonBackReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JsonManagedReference
 	private Metric metric;
 	
 	private long timeMillis;
@@ -45,13 +48,14 @@ public class Measurement implements Serializable{
 
 	public Measurement(long timeMillis, double value) {
 		super();
+		
 		this.timeMillis = timeMillis;
 		this.value = value;
 	}
 
 	@Override
 	public String toString() {
-		return "Measurement [id=" + id + ", metric=" + metric + ", timeMillis=" + timeMillis + ", value=" + value + "]";
+		return "Measurement [id=" + id + ", timeMillis=" + timeMillis + ", value=" + value + "]";
 	}
 
 	public String getId() {
@@ -84,14 +88,5 @@ public class Measurement implements Serializable{
 	public void setTimeMillis(long timeMillis) {
 		this.timeMillis = timeMillis;
 	}
-
-	public Measurement(String id, Metric metric, long timeMillis, double value) {
-		super();
-		this.id = id;
-		this.metric = metric;
-		this.timeMillis = timeMillis;
-		this.value = value;
-	}
-	
 	
 }

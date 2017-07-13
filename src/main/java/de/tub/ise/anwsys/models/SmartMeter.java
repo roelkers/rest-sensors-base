@@ -9,11 +9,13 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -21,10 +23,10 @@ public class SmartMeter implements Serializable{
 
 	private static final long serialVersionUID = -1L;
 	
-	 @OneToMany(fetch = FetchType.EAGER,mappedBy="smartMeter",cascade = CascadeType.ALL)
+	 @OneToMany(fetch = FetchType.EAGER,mappedBy="smartmeter",cascade = CascadeType.ALL)
 	 //@JoinColumn(name="id")
-	 @MapKey(name="id")
-	 @JsonManagedReference
+	 @MapKey(name="metricName")
+	 @JsonBackReference
 	 private Map<String,Metric> metrics = new HashMap<String,Metric>();
 
 	@Id

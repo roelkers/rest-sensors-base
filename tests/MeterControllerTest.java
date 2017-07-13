@@ -11,6 +11,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.WebApplicationContext;
@@ -62,8 +63,8 @@ public class MeterControllerTest {
     @Autowired
     private MeasurementRepository measurementRepository;
 
-    @Autowired
-    private MetricRepository metricRepository;
+    //@Autowired
+    //private MetricRepository metricRepository;
     
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
@@ -81,73 +82,120 @@ public class MeterControllerTest {
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
-        //this.meterRepository.deleteAll();
-        //this.metricRepository.deleteAll();
-        //this.measurementRepository.deleteAll();
-        
+       
+        /*
         this.meterList.add(meterRepository.save(new SmartMeter("ise1224hi5630")));
         this.meterList.add(meterRepository.save(new SmartMeter("ise1224hi5631")));
         this.meterList.add(meterRepository.save(new SmartMeter("ise1224hi5632")));
         
         meterList.forEach(meter ->{
-        	//metricRepository.save(new Metric("MX-11460-01","Current(mA)",meter));
-			//metricRepository.save(new Metric("MX-11564-01","Voltage(V)",meter));
         	Metric metric1 = new Metric("MX-11460-01","Current(mA)",meter);
 			Metric metric2 = new Metric("MX-11564-01","Voltage(V)",meter);
-			meter.getMetrics().put("MX-11460-01", metric1);
-			meter.getMetrics().put("MX-11564-01", metric2);
-        });
+			meter.getMetrics().put(metric1.getId(), metric1);
+			meter.getMetrics().put(metric2.getId(), metric2);
+        });*/
+        
+        this.meterList = (List<SmartMeter>) meterRepository.findAll();
+        
+        //System.out.println("METRICS-SIZE"+this.meterList.get(0).getMetrics().values().size());
+        //System.out.println("METRICS-SIZE"+this.meterList.get(1).getMetrics().values().size());
+        //System.out.println("METRICS-SIZE"+this.meterList.get(2).getMetrics().values().size());
+        
+        //System.out.println("METRICS-SIZE"+this.meterList.get(0).getMetrics().get
     }
     
     @Test
     public void getMeters() throws Exception {
-        mockMvc.perform(get("/meters"))
+    	MvcResult result =
+    			mockMvc.perform(get("/meters"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(contentType))
                 .andExpect(jsonPath("$[0].id", is(this.meterList.get(0).getId())))
-                .andExpect(jsonPath("$[1].id", is(this.meterList.get(1).getId())));
+                .andExpect(jsonPath("$[1].id", is(this.meterList.get(1).getId())))
+                //.andExpect(jsonPath("$[0].metrics['MX-11460-01'].id", is("MX-11460-01")))
+                //.andExpect(jsonPath("$[0].metrics['MX-11564-01'].id", is("MX-11564-01")))
+                .andReturn();
+    	System.out.println("response: "+result.getResponse().getContentAsString());
     }
-
+    
     @Test
     public void getSingleMeter() throws Exception {
-    	mockMvc.perform(get("/meters/" + this.meterList.get(0).getId()))
+    	MvcResult result = mockMvc.perform(get("/meters/" + this.meterList.get(0).getId()))
     	.andExpect(status().isOk())
         .andExpect(content().contentType(contentType))
-        .andExpect(jsonPath("$.id", is(this.meterList.get(0).getId())));
+        .andExpect(jsonPath("$.id", is(this.meterList.get(0).getId())))
+        .andReturn();
+    	
+    	System.out.println("responseSingle: "+result.getResponse().getContentAsString());
+    }
+    
+    @Test
+    public void getAllMetrics() throws Exception {
+    	MvcResult result = mockMvc.perform(get("/meters/" + this.meterList.get(0).getId()+"/metrics"))
+    	.andExpect(status().isOk())
+        .andExpect(content().contentType(contentType))
+        
+        .andReturn();
+    	
+    	//System.out.println("responseMetrics: "+result.getResponse().getContentAsString());
     }
 	
     @Test
     public void postMeasurement() throws Exception {
     	long timeMillis = System.currentTimeMillis();
     	double value = 1000;
-    	Metric metric = this.meterList.get(0).getMetrics().get("MX-11460-01");
-    	Measurement mes = new Measurement(timeMillis, value);
-    	//System.out.println(mes.toString());
-        String measurementJson = json(mes);
+    	//String metricId = "1";
+    	//Metric metric = this.meterList.get(0).getMetrics().get("1");
+    	//Measurement mes = new Measurement(timeMillis, value);
+    	
+    	//System.out.println("metrics: " + this.meterList.get(0).getMetrics().get);
+    	//System.out.println(metric.toString());
+    	
+        //String measurementJson = json(mes);
 
-        this.mockMvc.perform(post("/meters/" + meterList.get(0).getId() + "/metrics/" + metric.getId() +"/measurements")
-                .contentType(contentType)
-                .content(measurementJson))
+        this.mockMvc.perform(post("/meters/" + meterList.get(0).getId() + "/metrics/" + meterList.get(0).getMetrics().get("MX-11460-01") +"/measurements")
+        		.param("timeMillis", Long.toString(timeMillis))
+        		.param("value", Double.toString(value))
+        		)
                 .andExpect(status().isCreated());
     }	
     
+    
     @Test
     public void getAverageMetric() throws Exception {
-    	Metric metric = this.meterList.get(0).getMetrics().get("MX-11460-01");
+    	/*Metric metric = this.meterList.get(0).getMetrics().get(0);
     	Measurement mes1 = new Measurement(metric, System.currentTimeMillis(), 100);
     	Measurement mes2 = new Measurement(metric, System.currentTimeMillis()+1000, 300);
     	
     	measurementRepository.save(mes1);
-    	measurementRepository.save(mes2);
+    	measurementRepository.save(mes2);*/
     	
-    	mockMvc.perform(get("/meters/" + meterList.get(0).getId() + "/metrics/" + metric.getId())
+    	long timeMillis = System.currentTimeMillis();
+    	
+    	this.mockMvc.perform(post("/meters/" + meterList.get(0).getId() + "/metrics/MX-11460-01/measurements")
+        		.param("timeMillis", Long.toString(timeMillis))
+        		.param("value", "100")
+        		)
+                .andExpect(status().isCreated());
+    	
+    	this.mockMvc.perform(post("/meters/" + meterList.get(0).getId() + "/metrics/MX-11460-01/measurements")
+        		.param("timeMillis", Long.toString(timeMillis))
+        		.param("value", "300")
+        		)
+                .andExpect(status().isCreated());
+    	
+    	MvcResult result =mockMvc.perform(get("/meters/" + meterList.get(0).getId() + "/metrics/MX-11460-01")
     			.param("timeMillisMeasurement", Long.toString(System.currentTimeMillis()))
     			)
     			.andExpect(status().isOk())
     			.andExpect(content().contentType(contentType))
-    			.andExpect(jsonPath("$.metricId", is(metric.getId())))
+    			.andExpect(jsonPath("$.metricName", is("MX-11460-01")))
     	    	.andExpect(jsonPath("$.value", is(200.0)))
-    	    	.andExpect(jsonPath("$.sampleSize", is(2)));
+    	    	.andExpect(jsonPath("$.sampleSize", is(2)))
+    	    	.andReturn();
+    	
+    	System.out.println("responseAverage: "+result.getResponse().getContentAsString());
+    	
     }
     
     protected String json(Object o) throws IOException {
@@ -156,4 +204,5 @@ public class MeterControllerTest {
                 o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
+    
 }

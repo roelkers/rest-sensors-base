@@ -11,7 +11,7 @@ public class SmartMeterNotFoundException  extends RuntimeException  {
 	private static final long serialVersionUID = 1L;
 
 	public SmartMeterNotFoundException(String meterId) {
-		super("could not find user '" + meterId + "'.");
+		super("could not find meter '" + meterId + "'.");
 	}
 }
 
